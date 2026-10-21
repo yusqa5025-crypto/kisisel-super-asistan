@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Kişisel Süper Asistan</string>
+    <string name="default_web_client_id">WEB_CLIENT_ID_BURAYA.apps.googleusercontent.com</string>
+</resources>

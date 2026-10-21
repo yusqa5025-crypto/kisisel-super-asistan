@@ -1,26 +1,181 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#0d111c"><title>Kişisel Süper Asistan</title>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0b1020">
+<title>Kişisel Süper Asistan</title>
 <style>
-:root{color-scheme:dark;--bg:#0d111c;--panel:#151c2b;--line:#263148;--txt:#f3f6ff;--muted:#9ba8c2;--accent:#8b7cff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px system-ui, sans-serif}header{padding:18px 16px 12px;position:sticky;top:0;background:#0d111cf2;border-bottom:1px solid var(--line);z-index:2}h1{font-size:20px;margin:0}small,.muted{color:var(--muted)}main{padding:14px;max-width:760px;margin:auto}.tabs{display:flex;gap:8px;margin:12px 0}.tab,button{border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:var(--panel);color:var(--txt);font:inherit}.tab.active,button.primary{background:var(--accent);color:white;border-color:transparent}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}.messages{display:flex;flex-direction:column;gap:10px;min-height:180px;max-height:42vh;overflow:auto}.bubble{padding:11px 13px;border-radius:14px;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}.user{align-self:flex-end;background:#5148a8}.assistant{align-self:flex-start;background:#222c40}.entry{display:flex;gap:8px;margin-top:10px}input,textarea{width:100%;min-width:0;background:#0f1522;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit}textarea{resize:vertical;min-height:76px}button{cursor:pointer}.entry button{flex-shrink:0}.row{display:flex;gap:8px}.row>*{flex:1}.task{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.task span{flex:1;overflow-wrap:anywhere}.task.done span{text-decoration:line-through;color:var(--muted)}.hidden{display:none}.hint{font-size:12px;color:var(--muted);line-height:1.5}
-</style></head><body>
-<header><h1>✦ Kişisel Süper Asistan</h1><small>AI • Notlar • Günlük plan</small></header>
-<main><div class="tabs"><button class="tab active" data-page="chat">AI Sohbet</button><button class="tab" data-page="tasks">Görevler</button><button class="tab" data-page="notes">Notlar</button><button class="tab" data-page="settings">Ayarlar</button></div>
-<section id="chat" class="page"><div class="panel"><div id="messages" class="messages"><div class="bubble assistant">Merhaba! Ben kişisel asistanınım. Bana bir soru sorabilir veya günlük planını hazırlatabilirsin.</div></div><div class="entry"><input id="prompt" placeholder="Bir şey sor..." enterkeyhint="send"><button class="primary" id="send">Gönder</button></div><div class="hint" id="chatStatus">AI bağlantısı için Ayarlar bölümüne sunucu adresini gir.</div></div><div class="panel"><b>Hızlı öneriler</b><div class="row" style="margin-top:10px"><button class="quick">Günlük planımı hazırla</button><button class="quick">Ders çalışma planı yap</button></div></div></section>
-<section id="tasks" class="page hidden"><div class="panel"><h3>Yapılacaklar</h3><div class="entry"><input id="taskInput" placeholder="Yeni görev"><button class="primary" id="addTask">Ekle</button></div><div id="taskList"></div></div></section>
-<section id="notes" class="page hidden"><div class="panel"><h3>Not defteri</h3><input id="noteTitle" placeholder="Not başlığı"><textarea id="noteBody" placeholder="Notunu buraya yaz..."></textarea><button class="primary" id="saveNote" style="margin-top:8px">Notu kaydet</button><div id="noteList" style="margin-top:12px"></div></div></section>
-<section id="settings" class="page hidden"><div class="panel"><h3>AI sunucu ayarları</h3><label for="apiUrl">Backend URL (HTTPS)</label><input id="apiUrl" placeholder="https://senin-servisin.onrender.com" style="margin:8px 0"><button class="primary" id="saveUrl">Adresi kaydet</button><p class="hint">Groq API anahtarını APK içine koyma. Anahtar backend sunucusunda GROQ_API_KEY ortam değişkeni olarak saklanmalı. Bu proje klasöründeki backend dizinini ayrı bir web servisi olarak dağıtabilirsin.</p><button id="voice">Sesle yaz (tarayıcı destekliyorsa)</button></div></section>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#131b30;--panel2:#1a2540;--line:#2a3755;--txt:#f4f6ff;--muted:#9eaccb;--accent:#8875ff;--green:#55dfb0}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#18264b 0%,var(--bg) 55%);color:var(--txt);font:15px system-ui,sans-serif;min-height:100vh}
+header{position:sticky;top:0;z-index:5;padding:16px;background:#0b1020ed;border-bottom:1px solid var(--line);backdrop-filter:blur(15px)}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:45px;height:45px;border-radius:15px;background:linear-gradient(135deg,#9d86ff,#5944db);display:grid;place-items:center;font-size:25px;box-shadow:0 5px 24px #7962ff50}
+h1{font-size:18px;margin:0}
+small,.muted,.hint{color:var(--muted)}
+header small{font-size:12px}
+main{max-width:800px;margin:auto;padding:14px 13px 35px}
+nav{display:flex;gap:7px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:none}
+nav button{white-space:nowrap;flex-shrink:0}
+button{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:var(--panel2);color:var(--txt);font:inherit;cursor:pointer}
+button:disabled{opacity:.5}
+button.primary,.active{background:var(--accent);border-color:transparent;color:white}
+button.danger{color:#ff9da9}
+input,textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:12px;padding:12px;background:#0c1325;color:var(--txt);font:inherit;outline:none}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:90px;resize:vertical}
+.panel{padding:15px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#17213aee,#11182aee);margin-bottom:13px;box-shadow:0 8px 24px #00000012}
+h2{font-size:19px;margin:2px 0 12px}
+h3{font-size:15px;margin:0 0 10px}
+.page.hidden{display:none}
+.row{display:flex;gap:8px;align-items:center;margin-top:9px}
+.row>*{flex:1}
+.messages{display:flex;flex-direction:column;gap:10px;min-height:180px;max-height:46vh;overflow-y:auto;padding:3px 0 12px}
+.bubble{padding:12px 14px;border-radius:15px;max-width:94%;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
+.bubble.user{align-self:flex-end;background:#5145ad}
+.bubble.assistant{align-self:flex-start;background:#202c46;border:1px solid #2b3957}
+.entry{display:flex;gap:8px}
+.entry input{flex:1}
+.entry button{flex-shrink:0}
+.hint{font-size:12px;line-height:1.5;margin:10px 0 0}
+.item{border-bottom:1px solid var(--line);padding:12px 0}
+.item:last-child{border-bottom:0}
+.itemtop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.itemtop strong{overflow-wrap:anywhere}
+.item p{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);margin:7px 0}
+.item button{padding:7px 10px;font-size:12px}
+.task{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.task span{flex:1;overflow-wrap:anywhere}
+.task.done span{text-decoration:line-through;color:var(--muted)}
+.task input{width:19px;height:19px;flex:0 0 auto;accent-color:var(--accent)}
+.pill{font-size:12px;padding:5px 9px;border-radius:99px;background:#283454;color:#c9c3ff}
+.profile{display:flex;align-items:center;gap:12px}
+.avatar{width:48px;height:48px;border-radius:50%;background:#40377b;display:grid;place-items:center;font-size:23px}
+.quickgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quickgrid button{text-align:left;line-height:1.35}
+#toast{position:fixed;bottom:20px;left:16px;right:16px;margin:auto;max-width:500px;background:#293654;border:1px solid #4b5e88;padding:13px;border-radius:13px;z-index:10;display:none}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">
+  <div class="logo">✦</div>
+  <div><h1>Kişisel Süper Asistan</h1><small>Yapay zekâ · Günlük yaşam · Planlama</small></div>
+ </div>
+</header>
+<main>
+<nav>
+ <button class="active" data-page="chat">✦ Sohbet</button>
+ <button data-page="tasks">✓ Görevler</button>
+ <button data-page="notes">▤ Notlar</button>
+ <button data-page="settings">⚙ Ayarlar</button>
+</nav>
+
+<section class="page" id="chat">
+ <div class="panel">
+  <div class="itemtop"><h2>AI Asistan</h2><span class="pill" id="connection">Hazır</span></div>
+  <div class="messages" id="messages"></div>
+  <div class="entry"><input id="prompt" placeholder="Asistanına bir şey sor..." enterkeyhint="send"><button class="primary" id="send">Gönder</button></div>
+  <div class="row"><button id="voice">🎙 Sesle yaz</button><button id="clearChat">Sohbeti temizle</button></div>
+  <p class="hint" id="chatStatus">AI için Ayarlar bölümüne sunucu adresini kaydet.</p>
+ </div>
+ <div class="panel">
+  <h3>Hızlı işlemler</h3>
+  <div class="quickgrid">
+   <button class="quick">📅 Günlük planımı hazırla</button>
+   <button class="quick">📚 Ders çalışma planı yap</button>
+   <button class="quick">💡 Yeni fikirler öner</button>
+   <button class="quick">📝 Notlarımı düzenlememe yardım et</button>
+  </div>
+ </div>
+</section>
+
+<section class="page hidden" id="tasks">
+ <div class="panel">
+  <h2>Görevlerim</h2>
+  <div class="entry"><input id="taskInput" placeholder="Yeni görev ekle..."><button class="primary" id="addTask">Ekle</button></div>
+  <div id="taskList"></div>
+ </div>
+</section>
+
+<section class="page hidden" id="notes">
+ <div class="panel">
+  <h2>Not defterim</h2>
+  <input id="noteTitle" placeholder="Not başlığı">
+  <textarea id="noteBody" placeholder="Notunu buraya yaz..."></textarea>
+  <div class="row"><button class="primary" id="saveNote">Notu kaydet</button><button id="cancelEdit">Temizle</button></div>
+  <div id="noteList"></div>
+ </div>
+</section>
+
+<section class="page hidden" id="settings">
+ <div class="panel">
+  <h2>Hesabım</h2>
+  <div class="profile">
+   <div class="avatar" id="avatar">👤</div>
+   <div style="flex:1;min-width:0"><strong id="accountName">Misafir kullanıcı</strong><div class="hint" id="accountEmail">Henüz giriş yapılmadı</div></div>
+  </div>
+  <button class="primary" style="width:100%;margin-top:14px" id="googleLogin">Google hesabıyla giriş yap</button>
+  <button class="danger" style="margin-top:8px;width:100%" id="logout">Oturumu kapat</button>
+  <p class="hint">Google girişinin çalışması için Google Cloud Console üzerinden OAuth Web Client ID yapılandırılmalıdır. Giriş bilgileri cihazında gösterilir; sunucu tarafında kullanıcı hesabı oluşturma ayrıca yapılandırılmalıdır.</p>
+ </div>
+
+ <div class="panel">
+  <h2>AI bağlantısı</h2>
+  <label for="apiUrl">AI sunucu adresi (HTTPS)</label>
+  <input id="apiUrl" placeholder="https://senin-servisin.onrender.com" style="margin-top:8px">
+  <div class="row"><button class="primary" id="saveUrl">Adresi kaydet</button><button id="testUrl">Bağlantıyı kontrol et</button></div>
+  <p class="hint">Groq anahtarı bu uygulamaya gömülmez. Sunucunun ortam değişkenlerinde GROQ_API_KEY olarak saklanmalıdır.</p>
+ </div>
+
+ <div class="panel">
+  <h2>Uygulama tercihleri</h2>
+  <label for="displayName">Görünen ad</label>
+  <input id="displayName" placeholder="Nasıl hitap edelim?" style="margin-top:8px">
+  <button class="primary" id="saveName" style="margin-top:8px;width:100%">Adımı kaydet</button>
+  <p class="hint">Notlar, görevler ve sohbet geçmişi bu cihazda saklanır. Uygulamayı silmek yerel verileri silebilir.</p>
+ </div>
+</section>
 </main>
+<div id="toast"></div>
 <script>
-const $=id=>document.getElementById(id);let history=[];let tasks=JSON.parse(localStorage.tasks||"[]"),notes=JSON.parse(localStorage.notes||"[]");
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".page").forEach(x=>x.classList.toggle("hidden",x.id!==b.dataset.page));});
-function addBubble(text,who){let d=document.createElement("div");d.className="bubble "+who;d.textContent=text;$("messages").appendChild(d);$("messages").scrollTop=$("messages").scrollHeight}
-async function sendMessage(text){text=(text||$("prompt").value).trim();if(!text)return;$("prompt").value="";addBubble(text,"user");history.push({role:"user",content:text});let url=localStorage.apiUrl||"";if(!url){addBubble("Önce Ayarlar bölümüne backend adresini gir. Sunucu kurulum talimatları proje ZIP'indeki README dosyasında.","assistant");return}
-$("chatStatus").textContent="Yanıt bekleniyor…";$("send").disabled=true;try{let r=await fetch(url.replace(/\/+$/,"")+"/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});let d=await r.json();if(!r.ok)throw Error(d.error||"Sunucu hatası");history.push({role:"assistant",content:d.reply});addBubble(d.reply,"assistant");$("chatStatus").textContent="Bağlandı"}catch(e){addBubble("Bağlantı kurulamadı: "+e.message,"assistant");$("chatStatus").textContent="Bağlantı hatası"}finally{$("send").disabled=false}}
-$("send").onclick=()=>sendMessage();$("prompt").onkeydown=e=>{if(e.key==="Enter")sendMessage()};document.querySelectorAll(".quick").forEach(b=>b.onclick=()=>sendMessage(b.textContent));
-function drawTasks(){$("taskList").innerHTML="";tasks.forEach((t,i)=>{let d=document.createElement("div");d.className="task"+(t.done?" done":"");let c=document.createElement("input");c.type="checkbox";c.checked=t.done;c.style.width="auto";c.onchange=()=>{tasks[i].done=c.checked;persistTasks()};let s=document.createElement("span");s.textContent=t.text;let del=document.createElement("button");del.textContent="Sil";del.onclick=()=>{tasks.splice(i,1);persistTasks()};d.append(c,s,del);$("taskList").append(d)})}
-function persistTasks(){localStorage.tasks=JSON.stringify(tasks);drawTasks()}$("addTask").onclick=()=>{let t=$("taskInput").value.trim();if(t){tasks.push({text:t,done:false});$("taskInput").value="";persistTasks()}};drawTasks();
-function drawNotes(){$("noteList").innerHTML="";notes.forEach((n,i)=>{let d=document.createElement("div");d.className="panel";let b=document.createElement("b");b.textContent=n.title||"Başlıksız";let p=document.createElement("p");p.textContent=n.body;let del=document.createElement("button");del.textContent="Sil";del.onclick=()=>{notes.splice(i,1);persistNotes()};d.append(b,p,del);$("noteList").append(d)})}
-function persistNotes(){localStorage.notes=JSON.stringify(notes);drawNotes()}$("saveNote").onclick=()=>{let body=$("noteBody").value.trim();if(body){notes.unshift({title:$("noteTitle").value.trim(),body});$("noteTitle").value="";$("noteBody").value="";persistNotes()}};drawNotes();
-$("apiUrl").value=localStorage.apiUrl||"";$("saveUrl").onclick=()=>{localStorage.apiUrl=$("apiUrl").value.trim().replace(/\/+$/,"");$("chatStatus").textContent="Sunucu adresi kaydedildi"};$("voice").onclick=()=>{let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert("Bu Android WebView'da ses tanıma desteklenmiyor.");return}let r=new SR();r.lang="tr-TR";r.onresult=e=>{$("prompt").value=e.results[0][0].transcript};r.start()};
-</script></body></html>
+const $=id=>document.getElementById(id);
+const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}};
+let tasks=read("tasks",[]),notes=read("notes",[]),history=read("chatHistory",[]);
+let editingNote=null;
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+function toast(s){$("toast").textContent=s;$("toast").style.display="block";setTimeout(()=>{$("toast").style.display="none"},2600)}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".page").forEach(p=>p.classList.toggle("hidden",p.id!==b.dataset.page))});
+function bubble(text,role,saveIt=false){let d=document.createElement("div");d.className="bubble "+role;d.textContent=text;$("messages").appendChild(d);$("messages").scrollTop=$("messages").scrollHeight;if(saveIt){history.push({role:role==="user"?"user":"assistant",content:text});save("chatHistory",history)}}
+function drawChat(){ $("messages").innerHTML="";if(!history.length){let d=document.createElement("div");d.className="bubble assistant";d.textContent="Merhaba! Ben Kişisel Süper Asistan. Planlama, sorular, notlar ve günlük işlerinde yardımcı olabilirim."; $("messages").appendChild(d);return}history.slice(-80).forEach(m=>bubble(m.content,m.role==="user"?"user":"assistant",false))}
+async function sendMessage(text){text=(text||$("prompt").value).trim();if(!text)return;$("prompt").value="";bubble(text,"user",true);const url=(localStorage.apiUrl||"").replace(/\/+$/,"");if(!url){bubble("Önce Ayarlar bölümüne AI sunucu adresini kaydet.", "assistant",true);return}
+$("send").disabled=true;$("connection").textContent="Yanıt bekleniyor";$("chatStatus").textContent="Asistana bağlanılıyor…";
+try{const r=await fetch(url+"/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history.slice(-16)})});let d=await r.json();if(!r.ok)throw Error(d.error||"Sunucu hatası");bubble(d.reply||"Yanıt alınamadı.","assistant",true);$("connection").textContent="Bağlı";$("chatStatus").textContent="Yanıt alındı"}catch(e){bubble("Bağlantı hatası: "+e.message,"assistant",true);$("connection").textContent="Bağlantı yok";$("chatStatus").textContent="Sunucu adresini ve sunucu durumunu kontrol et"}finally{$("send").disabled=false}}
+$("send").onclick=()=>sendMessage();$("prompt").addEventListener("keydown",e=>{if(e.key==="Enter")sendMessage()});
+document.querySelectorAll(".quick").forEach(b=>b.onclick=()=>sendMessage(b.textContent.replace(/^[^\s]+\s*/,"")));
+$("clearChat").onclick=()=>{history=[];save("chatHistory",history);drawChat();toast("Sohbet geçmişi temizlendi")};
+
+function renderTasks(){$("taskList").innerHTML="";tasks.forEach((t,i)=>{let d=document.createElement("div");d.className="task"+(t.done?" done":"");let c=document.createElement("input");c.type="checkbox";c.checked=!!t.done;c.onchange=()=>{tasks[i].done=c.checked;save("tasks",tasks);renderTasks()};let s=document.createElement("span");s.textContent=t.text;let del=document.createElement("button");del.textContent="Sil";del.onclick=()=>{tasks.splice(i,1);save("tasks",tasks);renderTasks()};d.append(c,s,del);$("taskList").append(d)})}
+$("addTask").onclick=()=>{let v=$("taskInput").value.trim();if(!v)return;tasks.unshift({text:v,done:false});save("tasks",tasks);$("taskInput").value="";renderTasks()};
+$("taskInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("addTask").click()});
+
+function renderNotes(){$("noteList").innerHTML="";notes.forEach((n,i)=>{let d=document.createElement("div");d.className="item";let top=document.createElement("div");top.className="itemtop";let title=document.createElement("strong");title.textContent=n.title||"Başlıksız not";let actions=document.createElement("div");let edit=document.createElement("button");edit.textContent="Düzenle";edit.onclick=()=>{editingNote=i;$("noteTitle").value=n.title;$("noteBody").value=n.body;document.querySelector('[data-page="notes"]').click()};let del=document.createElement("button");del.textContent="Sil";del.className="danger";del.onclick=()=>{notes.splice(i,1);save("notes",notes);renderNotes()};actions.append(edit,del);top.append(title,actions);let p=document.createElement("p");p.textContent=n.body;d.append(top,p);$("noteList").append(d)})}
+$("saveNote").onclick=()=>{let title=$("noteTitle").value.trim(),body=$("noteBody").value.trim();if(!title&&!body){toast("Önce not yaz");return}let n={title,body,date:new Date().toISOString()};if(editingNote!==null)notes[editingNote]=n;else notes.unshift(n);save("notes",notes);editingNote=null;$("noteTitle").value="";$("noteBody").value="";renderNotes();toast("Not kaydedildi")};
+$("cancelEdit").onclick=()=>{editingNote=null;$("noteTitle").value="";$("noteBody").value=""};
+
+$("saveUrl").onclick=()=>{let v=$("apiUrl").value.trim().replace(/\/+$/,"");if(v&&!v.startsWith("https://")){toast("Güvenlik için HTTPS adresi kullan");return}localStorage.apiUrl=v;toast("AI sunucu adresi kaydedildi")};
+$("testUrl").onclick=async()=>{let u=$("apiUrl").value.trim().replace(/\/+$/,"");if(!u){toast("Önce sunucu adresini gir");return}try{let r=await fetch(u+"/");if(!r.ok)throw Error();toast("Sunucuya ulaşıldı")}catch{toast("Bağlantı kurulamadı; adresi kontrol et")}};
+$("saveName").onclick=()=>{let n=$("displayName").value.trim();if(!n){toast("Bir ad gir");return}localStorage.displayName=n;if(!localStorage.accountEmail){$("accountName").textContent=n;$("avatar").textContent=n[0].toUpperCase()}toast("Adın kaydedildi")};
+function setAccount(a){localStorage.accountProfile=JSON.stringify(a);$("accountName").textContent=a.name||"Google kullanıcısı";$("accountEmail").textContent=a.email||"";$("avatar").textContent=(a.name||"G").charAt(0).toUpperCase()}
+function loadAccount(){let a=read("accountProfile",null);if(a)setAccount(a);else if(localStorage.displayName){$("accountName").textContent=localStorage.displayName;$("avatar").textContent=localStorage.displayName[0].toUpperCase()}$("displayName").value=localStorage.displayName||""}
+window.onGoogleSignIn=function(raw){try{let profile=typeof raw==="string"?JSON.parse(raw):raw;setAccount(profile);toast("Google hesabı seçildi: "+(profile.email||profile.name))}catch(e){toast("Google hesap bilgisi okunamadı")}};
+window.onGoogleSignInError=function(message){toast("Google girişi yapılandırılamadı: "+message)};
+$("googleLogin").onclick=()=>{if(window.Android&&Android.googleSignIn){Android.googleSignIn()}else toast("Google girişi yalnızca Android uygulamasında kullanılabilir")};
+$("logout").onclick=()=>{localStorage.removeItem("accountProfile");$("accountName").textContent="Misafir kullanıcı";$("accountEmail").textContent="Henüz giriş yapılmadı";$("avatar").textContent="👤";toast("Cihazdaki hesap görünümü kapatıldı")};
+$("voice").onclick=()=>{let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast("Bu cihazda ses tanıma desteklenmiyor");return}let r=new SR();r.lang="tr-TR";r.onresult=e=>{$("prompt").value=e.results[0][0].transcript};r.onerror=()=>toast("Ses tanınamadı");r.start()};
+$("apiUrl").value=localStorage.apiUrl||"";
+drawChat();renderTasks();renderNotes();loadAccount();
+</script>
+</body>
+</html>
